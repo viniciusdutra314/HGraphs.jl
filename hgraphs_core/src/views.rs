@@ -1,13 +1,10 @@
-pub struct GraphViewConnectedComponent<G>{
-    graph:G
-}
+// pub struct GraphViewConnectedComponent<G>{
+//     graph:G
+// }
 
-impl<G,N> GraphViewConnectedComponent<G>{
-    fn new(graph:G,node:N)->Option<Self>{
-        graph.
-    } 
+// impl<G,N> GraphViewConnectedComponent<G>{
+//     fn new(graph:G,node:N)->Option<Self>{
+//         graph.
+//     }
 
-    
-}
-
-
+// }

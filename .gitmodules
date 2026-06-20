@@ -1,0 +1,3 @@
+[submodule "hgraphs_core/assets/HIF-standard"]
+	path = hgraphs_core/assets/HIF-standard
+	url = https://github.com/HIF-org/HIF-standard

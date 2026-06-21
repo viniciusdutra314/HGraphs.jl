@@ -476,6 +476,7 @@ dependencies = [
 name = "hgraphs_core"
 version = "0.1.0"
 dependencies = [
+ "hypergraph",
  "jsonschema",
  "petgraph",
  "rustworkx-core",
@@ -579,6 +580,19 @@ dependencies = [
  "tokio",
  "tower-service",
  "tracing",
+]
+
+[[package]]
+name = "hypergraph"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f585623d465472050eb27ca1f56fb628981a814d463e56fe8be7f8fcc2064be9"
+dependencies = [
+ "ahash",
+ "indexmap",
+ "itertools 0.13.0",
+ "rayon",
+ "thiserror",
 ]
 
 [[package]]
@@ -700,6 +714,15 @@ name = "ipnet"
 version = "2.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d98f6fed1fde3f8c21bc40a1abb88dd75e67924f9cffc3ef95607bad8017f8e2"
+
+[[package]]
+name = "itertools"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
+dependencies = [
+ "either",
+]
 
 [[package]]
 name = "itertools"
@@ -1172,7 +1195,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2964d0cf57a3e7a06e8183d14a8b527195c706b7983549cd5462d5aa3747438f"
 dependencies = [
  "either",
- "itertools",
+ "itertools 0.14.0",
  "rayon",
 ]
 

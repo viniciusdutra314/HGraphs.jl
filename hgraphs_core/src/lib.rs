@@ -10,12 +10,12 @@ pub trait EdgeCountable {
     fn num_edges(&self) -> usize;
 }
 
-trait Directedness {}
+pub trait Directedness {}
 
-struct Directed;
+pub struct Directed;
 impl Directedness for Directed {}
 
-struct Undirected;
+pub struct Undirected;
 impl Directedness for Undirected {}
 
 pub trait HyperGraph {
@@ -25,10 +25,21 @@ pub trait HyperGraph {
 }
 
 pub trait IncidenceHyperGraph: HyperGraph {
-    type EdgeNodeIter: Iterator<Item = Self::NodeId>;
-    type NodeEdgeIter: Iterator<Item = Self::HyperEdgeId>;
-    fn nodes_of_edge(&self, edge: Self::HyperEdgeId) -> Self::EdgeNodeIter;
-    fn edges_of_node(&self, node: Self::NodeId) -> Self::NodeEdgeIter;
+    type EdgeNodeIter<'a>: Iterator<Item = Self::NodeId>
+    where
+        Self: 'a;
+    type NodeEdgeIter<'a>: Iterator<Item = Self::HyperEdgeId>
+    where
+        Self: 'a;
+
+    fn nodes_of_edge<'a>(&'a self, edge: Self::HyperEdgeId) -> Option<Self::EdgeNodeIter<'a>>;
+    fn edges_of_node<'a>(&'a self, node: Self::NodeId) -> Option<Self::NodeEdgeIter<'a>>;
+
+    unsafe fn edges_of_node_unchecked<'a>(&'a self, node: Self::NodeId) -> Self::NodeEdgeIter<'a>;
+    unsafe fn nodes_of_edge_unchecked<'a>(
+        &'a self,
+        edge: Self::HyperEdgeId,
+    ) -> Self::EdgeNodeIter<'a>;
 }
 
 pub trait PropertyMapBase {

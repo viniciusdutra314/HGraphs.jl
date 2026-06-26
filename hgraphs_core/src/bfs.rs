@@ -33,24 +33,18 @@ where
     while let Some(node) = queue.pop_front() {
         visitor(BfsEvent::NodeFound(node));
         node_map.set(node, BfsState::Visited)?;
-        for edge in hg.edges_of_node(node) {
-            visitor(BfsEvent::EdgeFound(edge));
-            for neighbor in hg.nodes_of_edge(edge) {
-                let is_visited = node_map.get(neighbor).unwrap_or(&BfsState::Unvisited);
-                if *is_visited == BfsState::Unvisited {
-                    queue.push_back(neighbor);
-                    node_map.set(neighbor, BfsState::Processing)?;
+        unsafe {
+            for edge in hg.edges_of_node_unchecked(node) {
+                visitor(BfsEvent::EdgeFound(edge));
+                for neighbor in hg.nodes_of_edge_unchecked(edge) {
+                    let is_visited = node_map.get(neighbor).unwrap_or(&BfsState::Unvisited);
+                    if *is_visited == BfsState::Unvisited {
+                        queue.push_back(neighbor);
+                        node_map.set(neighbor, BfsState::Processing)?;
+                    }
                 }
             }
         }
     }
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_name() {}
 }

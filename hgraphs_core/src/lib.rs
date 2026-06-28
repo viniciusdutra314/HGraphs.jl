@@ -1,4 +1,9 @@
+use std::hash::Hash;
+
+use petgraph::{acyclic::AcyclicEdgeError::SelfLoop, data::Element::Edge};
+
 mod bfs;
+mod generators;
 mod implementations;
 mod io;
 mod projections;
@@ -18,28 +23,73 @@ impl Directedness for Directed {}
 pub struct Undirected;
 impl Directedness for Undirected {}
 
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+pub struct NodeIndex<T>(pub T);
+
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
+pub struct HyperEdgeIndex<T>(pub T);
+
 pub trait HyperGraph {
-    type HyperEdgeId: Copy + PartialEq;
-    type NodeId: Copy + PartialEq;
+    type RawNodeId: Copy + Eq + Hash;
+    type RawEdgeId: Copy + Eq + Hash;
     type Directedness: Directedness;
 }
 
 pub trait IncidenceHyperGraph: HyperGraph {
-    type EdgeNodeIter<'a>: Iterator<Item = Self::NodeId>
-    where
-        Self: 'a;
-    type NodeEdgeIter<'a>: Iterator<Item = Self::HyperEdgeId>
-    where
-        Self: 'a;
-
-    fn nodes_of_edge<'a>(&'a self, edge: Self::HyperEdgeId) -> Option<Self::EdgeNodeIter<'a>>;
-    fn edges_of_node<'a>(&'a self, node: Self::NodeId) -> Option<Self::NodeEdgeIter<'a>>;
-
-    unsafe fn edges_of_node_unchecked<'a>(&'a self, node: Self::NodeId) -> Self::NodeEdgeIter<'a>;
-    unsafe fn nodes_of_edge_unchecked<'a>(
+    fn incident_nodes<'a>(
         &'a self,
-        edge: Self::HyperEdgeId,
-    ) -> Self::EdgeNodeIter<'a>;
+        edge: HyperEdgeIndex<Self::RawEdgeId>,
+    ) -> Option<impl Iterator<Item = NodeIndex<Self::RawNodeId>> + 'a>;
+    fn incident_edges<'a>(
+        &'a self,
+        node: NodeIndex<Self::RawNodeId>,
+    ) -> Option<impl Iterator<Item = HyperEdgeIndex<Self::RawEdgeId>> + 'a>;
+
+    unsafe fn incident_nodes_unchecked<'a>(
+        &'a self,
+        edge: HyperEdgeIndex<Self::RawEdgeId>,
+    ) -> impl Iterator<Item = NodeIndex<Self::RawNodeId>> + 'a {
+        unsafe { self.incident_nodes(edge).unwrap_unchecked() }
+    }
+
+    unsafe fn incident_edges_unchecked<'a>(
+        &'a self,
+        node: NodeIndex<Self::RawNodeId>,
+    ) -> impl Iterator<Item = HyperEdgeIndex<Self::RawEdgeId>> + 'a {
+        unsafe { self.incident_edges(node).unwrap_unchecked() }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct Capacity {
+    additional_num_nodes: Option<usize>,
+    additional_num_hyperedges: Option<usize>,
+}
+
+pub trait AllocatableHyperGraph: HyperGraph {
+    fn reserve(&mut self, capacity: Capacity);
+
+    fn with_capacity(capacity: Capacity) -> Self
+    where
+        Self: Default,
+    {
+        let mut graph = Self::default();
+        graph.reserve(capacity);
+        graph
+    }
+}
+
+pub trait MutableIncidenceHyperGraph: HyperGraph {
+    fn add_incidence(
+        &mut self,
+        node: NodeIndex<Self::RawNodeId>,
+        hyperedge: HyperEdgeIndex<Self::RawEdgeId>,
+    ) -> Option<()>;
+    fn remove_incidence(
+        &mut self,
+        node: NodeIndex<Self::RawNodeId>,
+        hyperedge: HyperEdgeIndex<Self::RawEdgeId>,
+    ) -> Option<()>;
 }
 
 pub trait PropertyMapBase {

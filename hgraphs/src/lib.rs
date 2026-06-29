@@ -1,6 +1,6 @@
 pub use hgraphs_core::*;
-mod bfs;
-mod generators;
-mod io;
-mod projections;
-mod storage;
+pub mod bfs;
+pub mod generators;
+pub mod io;
+pub mod projections;
+pub mod storage;

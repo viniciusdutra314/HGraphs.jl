@@ -4,8 +4,8 @@ pub trait NodeCountable {
     fn num_nodes(&self) -> usize;
 }
 
-pub trait EdgeCountable {
-    fn num_edges(&self) -> usize;
+pub trait HyperEdgeCountable {
+    fn num_hyperedges(&self) -> usize;
 }
 
 pub trait Directedness {}

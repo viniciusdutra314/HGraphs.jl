@@ -1,5 +1,5 @@
 use crate::{
-    AllocatableHyperGraph, Capacity, EdgeCountable, ExtendableHyperGraph, HyperEdgeIndex,
+    AllocatableHyperGraph, Capacity, HyperEdgeCountable, ExtendableHyperGraph, HyperEdgeIndex,
     HyperGraph, IncidenceHyperGraph, MutableIncidenceHyperGraph, NodeCountable, NodeIndex,
     Undirected,
 };
@@ -8,7 +8,7 @@ use std::collections::{HashSet, TryReserveError};
 
 // Inspired by SimpleHypergraphs.jl
 #[derive(Default)]
-struct IncidenceMatrix {
+pub struct IncidenceMatrix {
     vertex2hyperedge: Vec<HashSet<HyperEdgeIndex<usize>>>,
     hyperedge2vertex: Vec<HashSet<NodeIndex<usize>>>,
 }
@@ -60,8 +60,8 @@ impl NodeCountable for IncidenceMatrix {
     }
 }
 
-impl EdgeCountable for IncidenceMatrix {
-    fn num_edges(&self) -> usize {
+impl HyperEdgeCountable for IncidenceMatrix {
+    fn num_hyperedges(&self) -> usize {
         self.hyperedge2vertex.len()
     }
 }
@@ -141,12 +141,12 @@ mod tests {
         })
         .map_err(|_| "failed to initialize graph")?;
         assert_eq!(graph.num_nodes(), 0);
-        assert_eq!(graph.num_edges(), 0);
+        assert_eq!(graph.num_hyperedges(), 0);
         for node_id in graph.try_add_nodes(5).map_err(|_| "failed to add nodes")? {
             assert_eq!(graph.incident_edges(node_id).unwrap().count(), 0);
         }
         assert_eq!(graph.num_nodes(), 5);
-        assert_eq!(graph.num_edges(), 0);
+        assert_eq!(graph.num_hyperedges(), 0);
         for hyperedge_id in graph
             .try_add_hyperedges(10)
             .map_err(|_| "failed to add edges")?
@@ -154,7 +154,7 @@ mod tests {
             assert_eq!(graph.incident_nodes(hyperedge_id).unwrap().count(), 0);
         }
         assert_eq!(graph.num_nodes(), 5);
-        assert_eq!(graph.num_edges(), 10);
+        assert_eq!(graph.num_hyperedges(), 10);
         Ok(())
     }
 

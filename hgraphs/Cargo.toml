@@ -1,9 +1,11 @@
 [package]
-name = "hgraphs_core"
+name = "hgraphs"
 version = "0.1.0"
 edition = "2024"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
+hgraphs-core = { path = "../hgraphs-core" }
 hypergraph = "2.2.0"
 jsonschema = "0.46.5"
 ndarray = "0.17.2"

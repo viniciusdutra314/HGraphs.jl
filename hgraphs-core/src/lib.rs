@@ -1,9 +1,5 @@
 use std::{collections::TryReserveError, hash::Hash};
-mod bfs;
-mod generators;
-mod implementations;
-mod io;
-mod projections;
+
 pub trait NodeCountable {
     fn num_nodes(&self) -> usize;
 }
@@ -117,8 +113,8 @@ where
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct Capacity {
-    num_nodes: Option<usize>,
-    num_hyperedges: Option<usize>,
+    pub num_nodes: Option<usize>,
+    pub num_hyperedges: Option<usize>,
 }
 
 pub trait AllocatableHyperGraph: HyperGraph {

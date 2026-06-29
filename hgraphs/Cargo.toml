@@ -1,17 +1,19 @@
 [package]
 name = "hgraphs"
-version = "0.1.0"
+authors=["Vinícius Sousa Dutra <dutravinisousa2@usp.br>"]
+version = "0.1.0-alpha.1"
 edition = "2024"
 license = "MIT OR Apache-2.0"
+description = "Hypergraph algorithms and data structures for HGraphs.jl"
+repository="https://github.com/viniciusdutra314/HGraphs.jl"
+keywords=["hypergraphs","data-structures"]
+readme=false
+rust-version="1.85.1"
+
 
 [dependencies]
-hgraphs-core = { path = "../hgraphs-core" }
-hypergraph = "2.2.0"
-jsonschema = "0.46.5"
-ndarray = "0.17.2"
-petgraph = { version = "0.8.3", default-features = false,features=["unstable"] }
-serde = "1.0.228"
-serde_json = "1.0.150"
+hgraphs-core = { path = "../hgraphs-core",version="0.1.0-alpha.1" }
+petgraph = { version = "0.8.3", default-features = false }
 
 [dev-dependencies]
 rustworkx-core = "0.18.0"

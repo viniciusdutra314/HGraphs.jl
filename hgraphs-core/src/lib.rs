@@ -28,48 +28,39 @@ pub trait HyperGraph {
     type Directedness: Directedness;
 }
 
-pub trait IncidenceHyperGraph: HyperGraph {
-    fn incident_nodes<'a>(
-        &'a self,
-        edge: HyperEdgeIndex<Self::RawEdgeId>,
-    ) -> Option<impl Iterator<Item = NodeIndex<Self::RawNodeId>> + 'a>;
-    fn incident_edges<'a>(
-        &'a self,
+pub trait HyperEdgeIncidence: HyperGraph {
+    fn incident_edges(
+        &self,
         node: NodeIndex<Self::RawNodeId>,
-    ) -> Option<impl Iterator<Item = HyperEdgeIndex<Self::RawEdgeId>> + 'a>;
+    ) -> Option<impl Iterator<Item = HyperEdgeIndex<Self::RawEdgeId>>>;
 
-    unsafe fn incident_nodes_unchecked<'a>(
-        &'a self,
-        edge: HyperEdgeIndex<Self::RawEdgeId>,
-    ) -> impl Iterator<Item = NodeIndex<Self::RawNodeId>> + 'a {
-        unsafe { self.incident_nodes(edge).unwrap_unchecked() }
-    }
-
-    unsafe fn incident_edges_unchecked<'a>(
-        &'a self,
+    unsafe fn incident_edges_unchecked(
+        &self,
         node: NodeIndex<Self::RawNodeId>,
-    ) -> impl Iterator<Item = HyperEdgeIndex<Self::RawEdgeId>> + 'a {
+    ) -> impl Iterator<Item = HyperEdgeIndex<Self::RawEdgeId>> {
         unsafe { self.incident_edges(node).unwrap_unchecked() }
     }
 }
 
-pub trait ContiguousIncidenceHyperGraph: HyperGraph {
-    fn incident_nodes_slice(
+pub trait NodeIncidence: HyperGraph {
+    fn incident_nodes(
         &self,
         edge: HyperEdgeIndex<Self::RawEdgeId>,
-    ) -> Option<&[NodeIndex<Self::RawNodeId>]>;
+    ) -> Option<impl Iterator<Item = NodeIndex<Self::RawNodeId>>>;
+
+    unsafe fn incident_nodes_unchecked(
+        &self,
+        edge: HyperEdgeIndex<Self::RawEdgeId>,
+    ) -> impl Iterator<Item = NodeIndex<Self::RawNodeId>> {
+        unsafe { self.incident_nodes(edge).unwrap_unchecked() }
+    }
+}
+
+pub trait ContiguousHyperEdgeIncidence: HyperGraph {
     fn incident_edges_slice(
         &self,
         node: NodeIndex<Self::RawNodeId>,
     ) -> Option<&[HyperEdgeIndex<Self::RawEdgeId>]>;
-
-    unsafe fn incident_nodes_slice_unchecked(
-        &self,
-        edge: HyperEdgeIndex<Self::RawEdgeId>,
-    ) -> &[NodeIndex<Self::RawNodeId>] {
-        unsafe { self.incident_nodes_slice(edge).unwrap_unchecked() }
-    }
-
     unsafe fn incident_edges_slice_unchecked(
         &self,
         node: NodeIndex<Self::RawNodeId>,
@@ -78,36 +69,17 @@ pub trait ContiguousIncidenceHyperGraph: HyperGraph {
     }
 }
 
-impl<T> IncidenceHyperGraph for T
-where
-    T: ContiguousIncidenceHyperGraph,
-{
-    fn incident_nodes<'a>(
-        &'a self,
+pub trait ContiguousNodeIncidence: HyperGraph {
+    fn incident_nodes_slice(
+        &self,
         edge: HyperEdgeIndex<Self::RawEdgeId>,
-    ) -> Option<impl Iterator<Item = NodeIndex<Self::RawNodeId>> + 'a> {
-        Some(self.incident_nodes_slice(edge)?.iter().copied())
-    }
+    ) -> Option<&[NodeIndex<Self::RawNodeId>]>;
 
-    fn incident_edges<'a>(
-        &'a self,
-        node: NodeIndex<Self::RawNodeId>,
-    ) -> Option<impl Iterator<Item = HyperEdgeIndex<Self::RawEdgeId>> + 'a> {
-        Some(self.incident_edges_slice(node)?.iter().copied())
-    }
-
-    unsafe fn incident_nodes_unchecked<'a>(
-        &'a self,
+    unsafe fn incident_nodes_slice_unchecked(
+        &self,
         edge: HyperEdgeIndex<Self::RawEdgeId>,
-    ) -> impl Iterator<Item = NodeIndex<Self::RawNodeId>> + 'a {
-        unsafe { self.incident_nodes_slice_unchecked(edge).iter().copied() }
-    }
-
-    unsafe fn incident_edges_unchecked<'a>(
-        &'a self,
-        node: NodeIndex<Self::RawNodeId>,
-    ) -> impl Iterator<Item = HyperEdgeIndex<Self::RawEdgeId>> + 'a {
-        unsafe { self.incident_edges_slice_unchecked(node).iter().copied() }
+    ) -> &[NodeIndex<Self::RawNodeId>] {
+        unsafe { self.incident_nodes_slice(edge).unwrap_unchecked() }
     }
 }
 

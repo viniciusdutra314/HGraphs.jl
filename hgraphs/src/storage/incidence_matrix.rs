@@ -1,7 +1,7 @@
 use crate::{
     AllocatableHyperGraph, Capacity, ExtendableHyperGraph, HyperEdgeCountable, HyperEdgeIncidence,
-    HyperEdgeIndex, HyperGraph, MutableIncidenceHyperGraph, NodeCountable, NodeIncidence,
-    NodeIndex, Undirected,
+    HyperEdgeIndex, HyperEdgeList, HyperGraph, MutableIncidenceHyperGraph, NodeCountable,
+    NodeIncidence, NodeIndex, Undirected,
 };
 
 use std::collections::{HashSet, TryReserveError};
@@ -63,6 +63,12 @@ impl NodeCountable for IncidenceMatrix {
 impl HyperEdgeCountable for IncidenceMatrix {
     fn num_hyperedges(&self) -> usize {
         self.hyperedge2vertex.len()
+    }
+}
+
+impl HyperEdgeList for IncidenceMatrix {
+    fn hyperedge_identifiers(&self) -> impl Iterator<Item = HyperEdgeIndex<Self::RawEdgeId>> {
+        (0..self.hyperedge2vertex.len()).map(HyperEdgeIndex)
     }
 }
 

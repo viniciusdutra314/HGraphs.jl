@@ -13,6 +13,11 @@ pub trait HyperEdgeCountable {
     fn num_hyperedges(&self) -> usize;
 }
 
+pub trait HyperEdgeList: HyperGraph {
+    /// Returns every currently valid hyperedge identifier exactly once.
+    fn hyperedge_identifiers(&self) -> impl Iterator<Item = HyperEdgeIndex<Self::RawEdgeId>>;
+}
+
 pub trait Directedness {}
 
 pub struct Directed;

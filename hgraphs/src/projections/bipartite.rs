@@ -97,24 +97,29 @@ mod tests {
     use super::{BipartiteEvent, BipartiteGraph, is_bipartite_with};
     use rustworkx_core::{generators::complete_graph, petgraph::prelude::*};
 
+    type TestResult = Result<(), Box<dyn std::error::Error>>;
     #[test]
-    fn try_from_accepts_a_bipartite_graph() {
+    fn try_from_accepts_a_bipartite_graph() -> TestResult {
         use rustworkx_core::generators::random_bipartite_graph;
-        let g: DiGraph<(), ()> = random_bipartite_graph(20, 20, 0.3, None, || (), || ()).unwrap();
-        assert!(BipartiteGraph::try_from(g).is_ok());
+        let graph: DiGraph<(), ()> = random_bipartite_graph(20, 20, 0.3, None, || (), || ())?;
+        let _bipartite = BipartiteGraph::try_from(graph)?;
+        Ok(())
     }
 
     #[test]
-    fn try_from_rejects_a_non_bipartite_graph() {
+    fn try_from_rejects_a_non_bipartite_graph() -> TestResult {
         use rustworkx_core::generators::complete_graph;
-        let g1: DiGraph<(), ()> = complete_graph(Some(10), None, || (), || ()).unwrap();
-        let g2 = g1.clone();
-        assert!(BipartiteGraph::try_from(g1).is_err());
-        let _fake_bipartite = unsafe { BipartiteGraph::new_unchecked(g2) };
+        let graph: DiGraph<(), ()> = complete_graph(Some(10), None, || (), || ())?;
+        let unchecked_graph = graph.clone();
+        assert!(BipartiteGraph::try_from(graph).is_err());
+        // SAFETY: This test deliberately exercises construction without validation;
+        // the resulting wrapper is not used as a valid bipartite graph.
+        let _fake_bipartite = unsafe { BipartiteGraph::new_unchecked(unchecked_graph) };
+        Ok(())
     }
 
     #[test]
-    fn is_bipartite_with_counts_colored_nodes_on_a_path() {
+    fn is_bipartite_with_counts_colored_nodes_on_a_path() -> TestResult {
         let mut g: UnGraph<(), ()> = UnGraph::new_undirected();
         let a = g.add_node(());
         let b = g.add_node(());
@@ -128,22 +133,22 @@ mod tests {
                 colored_nodes += 1;
             }
         });
-
         assert!(is_bipartite);
         assert_eq!(colored_nodes, 3);
+        Ok(())
     }
 
     #[test]
-    fn is_bipartite_with_reports_a_conflict() {
-        let g: DiGraph<(), ()> = complete_graph(Some(10), None, || (), || ()).unwrap();
+    fn is_bipartite_with_reports_a_conflict() -> TestResult {
+        let graph: DiGraph<(), ()> = complete_graph(Some(10), None, || (), || ())?;
         let mut conflicts = 0;
-        let is_bipartite = is_bipartite_with(&g, |event| {
+        let is_bipartite = is_bipartite_with(&graph, |event| {
             if let BipartiteEvent::Conflict { .. } = event {
                 conflicts += 1;
             }
         });
-
         assert!(!is_bipartite);
         assert_eq!(conflicts, 1);
+        Ok(())
     }
 }

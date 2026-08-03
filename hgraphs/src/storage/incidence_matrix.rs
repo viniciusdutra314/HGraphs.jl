@@ -103,12 +103,7 @@ impl ExtendableHyperGraph for IncidenceMatrix {
         num_nodes: usize,
     ) -> Result<impl Iterator<Item = NodeIndex<Self::RawNodeId>> + 'a, TryReserveError> {
         let current_len = self.vertex2hyperedge.len();
-        let current_cap = self.vertex2hyperedge.capacity();
-        let target_len = current_len + num_nodes;
-        if target_len > current_cap {
-            let missing_capacity = target_len - current_cap;
-            self.vertex2hyperedge.try_reserve_exact(missing_capacity)?;
-        }
+        self.vertex2hyperedge.try_reserve_exact(num_nodes)?;
         self.vertex2hyperedge
             .extend(std::iter::repeat_with(HashSet::new).take(num_nodes));
         let end = self.vertex2hyperedge.len();
@@ -120,12 +115,7 @@ impl ExtendableHyperGraph for IncidenceMatrix {
         num_hyperedges: usize,
     ) -> Result<impl Iterator<Item = HyperEdgeIndex<Self::RawEdgeId>> + 'a, TryReserveError> {
         let current_len = self.hyperedge2vertex.len();
-        let current_capacity = self.hyperedge2vertex.capacity();
-        let target_len = current_len + num_hyperedges;
-        if current_capacity < target_len {
-            let missing_capacity = target_len - current_capacity;
-            self.hyperedge2vertex.try_reserve_exact(missing_capacity)?;
-        }
+        self.hyperedge2vertex.try_reserve_exact(num_hyperedges)?;
         self.hyperedge2vertex
             .extend(std::iter::repeat_with(HashSet::new).take(num_hyperedges));
         let end = self.hyperedge2vertex.len();
@@ -136,17 +126,20 @@ impl ExtendableHyperGraph for IncidenceMatrix {
 #[cfg(test)]
 mod tests {
     use super::*;
+    type TestResult = Result<(), Box<dyn std::error::Error>>;
     #[test]
-    fn test_allocation_and_initialization() -> Result<(), &'static str> {
+    fn test_allocation_and_initialization() -> TestResult {
         let mut graph = IncidenceMatrix::try_with_capacity(Capacity {
             num_nodes: Some(5),
             num_hyperedges: Some(10),
-        })
-        .map_err(|_| "failed to initialize graph")?;
+        })?;
         assert_eq!(graph.num_nodes(), 0);
         assert_eq!(graph.num_hyperedges(), 0);
         for node_id in graph.try_add_nodes(5).map_err(|_| "failed to add nodes")? {
-            assert_eq!(graph.incident_edges(node_id).unwrap().count(), 0);
+            let incident_edges = graph
+                .incident_edges(node_id)
+                .ok_or("new node identifier is invalid")?;
+            assert_eq!(incident_edges.count(), 0);
         }
         assert_eq!(graph.num_nodes(), 5);
         assert_eq!(graph.num_hyperedges(), 0);
@@ -154,7 +147,10 @@ mod tests {
             .try_add_hyperedges(10)
             .map_err(|_| "failed to add edges")?
         {
-            assert_eq!(graph.incident_nodes(hyperedge_id).unwrap().count(), 0);
+            let incident_nodes = graph
+                .incident_nodes(hyperedge_id)
+                .ok_or("new hyperedge identifier is invalid")?;
+            assert_eq!(incident_nodes.count(), 0);
         }
         assert_eq!(graph.num_nodes(), 5);
         assert_eq!(graph.num_hyperedges(), 10);

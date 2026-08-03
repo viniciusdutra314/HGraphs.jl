@@ -1,3 +1,30 @@
 [workspace]
-resolver="3"
-members = ["hgraphs", "hgraphs-core","hgraphs-py"]
+resolver = "3"
+members = ["hgraphs", "hgraphs-core"]
+
+[workspace.package]
+authors = ["Vinícius Sousa Dutra <dutravinisousa2@usp.br>"]
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/viniciusdutra314/HGraphs.jl"
+rust-version = "1.85.1"
+version = "0.1.0-alpha.1"
+
+[workspace.dependencies]
+hgraphs-core = { path = "hgraphs-core", version = "0.1.0-alpha.1" }
+petgraph = { version = "0.8.3", default-features = false }
+rustworkx-core = "0.18.0"
+
+[workspace.lints.rust]
+unconditional_panic = "deny"
+
+[workspace.lints.clippy]
+disallowed_methods = "deny"
+expect_used = "deny"
+indexing_slicing = "deny"
+out_of_bounds_indexing = "deny"
+panic = "deny"
+todo = "deny"
+unimplemented = "deny"
+unreachable = "deny"
+unwrap_used = "deny"

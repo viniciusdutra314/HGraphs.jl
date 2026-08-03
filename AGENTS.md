@@ -2,7 +2,7 @@
 
 This file applies to the entire workspace. HGraphs is intended to be a
 high-performance, generic, reliable Rust hypergraph library with efficient
-`extern "C"` bridges for Julia and Python.
+`extern "C"` bridges for Julia.
 
 ## Design priorities
 
@@ -26,7 +26,7 @@ Measure performance-sensitive changes instead of relying on intuition.
   and optional I/O. Algorithms should depend on capabilities from
   `hgraphs-core`, not on a particular storage implementation.
 - Binding crates are thin adapters. Domain logic belongs in the Rust library,
-  not in Python, Julia, C, or macro glue.
+  not in Julia, C, or macro glue.
 - Keep exported `extern "C"` functions in a dedicated FFI crate or clearly
   isolated module. Do not weaken or de-genericize the native Rust API merely to
   make it directly FFI-safe.
@@ -71,7 +71,9 @@ time and space complexity when these are not obvious.
 
 ## Errors, absence, and panic freedom
 
-Safe public library APIs must not panic for any input or recoverable failure.
+Safe public library APIs must not panic because of caller-controlled input or a
+recoverable failure. An assertion panic is reserved for a violated internal
+invariant or programmer contract for which continuing is not meaningful.
 
 - Use `Option<T>` only for ordinary absence that requires no explanation.
 - Use `Result<T, E>` when an operation can fail. Use `Result<Option<T>, E>` when
@@ -80,14 +82,24 @@ Safe public library APIs must not panic for any input or recoverable failure.
   handle. Preserve the underlying cause when it is useful.
 - Mutating operations should either succeed completely or return an error
   without leaving a partially updated or internally inconsistent graph.
-- Treat arithmetic overflow, invalid IDs, invalid state, capacity exhaustion,
-  malformed input, and unsupported operations as explicit error paths.
+- Treat invalid IDs, invalid state, capacity exhaustion, malformed input, and
+  unsupported operations as explicit error paths.
 - Use fallible reservation before growth and propagate `TryReserveError` or a
   meaningful library error. Do not hide potentially large allocations.
-- Do not use `unwrap`, `expect`, indexing, `panic!`, `assert!`, `todo!`,
-  `unimplemented!`, or `unreachable!` on reachable library paths. Assertions
-  are appropriate in tests. Prefer checked access and explicit control flow.
+- Do not use `unwrap`, `expect`, indexing, `panic!`, `todo!`, `unimplemented!`,
+  or `unreachable!` on reachable paths. Prefer checked access and explicit
+  control flow.
+- Use `assert!`, `assert_eq!`, and `assert_ne!` only for internal invariants,
+  programmer contracts, and test expectations. Never use an assertion to
+  validate caller input or represent an allocation, capacity, parsing, or other
+  anticipated failure. Omit a custom assertion message when the expression and
+  compared values already make the failure obvious. Add a message only when it
+  supplies context that the standard assertion output would not communicate;
+  do not merely restate the assertion.
+- Use `debug_assert!` and its variants for expensive invariant checks that are
+  useful during development but inappropriate for a release hot path.
 - Do not use a panic as an internal error transport mechanism.
+- Do not weaken or bypass the workspace panic-denial lints.
 
 Rust's global allocator can abort the process on unrecoverable out-of-memory
 conditions. Within that platform limitation, make allocation failures fallible
@@ -113,11 +125,16 @@ generic algorithms whenever possible.
 - Add or update benchmarks for changes to storage layouts, traversal kernels,
   bulk operations, or FFI call patterns. Report meaningful before/after data for
   performance claims.
-- An optimization must not silently change error behavior, overflow behavior,
-  ordering guarantees, or graph invariants.
+- An optimization must not silently change error behavior, ordering guarantees,
+  or graph invariants.
 
 ## Dependencies and portability
 
+- Declare internal and third-party dependency versions in the root
+  `[workspace.dependencies]` table. Member crates must opt into only what they
+  use with `.workspace = true`, including build and development dependencies.
+  Keep a dependency local only when it intentionally cannot share the workspace
+  version, and document why.
 - Prefer `core`, `alloc`, and the standard library over adding a dependency.
 - Add a dependency only when it provides substantial, maintained functionality
   that would be risky or costly to reproduce. Explain the need in the change.
@@ -135,8 +152,8 @@ generic algorithms whenever possible.
 
 The native generic Rust API and the C-callable binding surface are separate
 layers. The exported functions are an implementation bridge for Julia and
-Python, not a promise to maintain a stable public C API. They may evolve in
-lockstep with the bindings.
+are not a promise to maintain a stable public C API. They may evolve in
+lockstep with the Julia bindings.
 
 - Expose opaque handles plus explicit constructor, destructor, query, and
   mutation functions. Make ownership and borrowing rules unambiguous.
@@ -144,7 +161,7 @@ lockstep with the bindings.
   `#[repr(C)]` data structures when layouts must cross the boundary, explicit
   tagged option/result representations, and pointer/length pairs.
 - Export concrete entry points for the graph types and operations required by
-  each binding. Keep the implementation generic behind those entry points;
+  the Julia binding. Keep the implementation generic behind those entry points;
   Rust traits and type parameters do not cross the C boundary.
 - Never expose Rust references, slices, `Vec`, `String`, enums without an
   explicit representation, trait objects, generics, or unwinding across C.
@@ -154,13 +171,13 @@ lockstep with the bindings.
   conversions, and UTF-8 before entering safe domain logic.
 - No panic may cross an `extern "C"` boundary. Remove panic sources and use an
   unwind guard at the outer boundary where the build supports unwinding.
-- Keep declarations used by Julia and Python synchronized with the Rust
-  exports. Breaking an exported signature is acceptable when all in-repository
+- Keep declarations used by Julia synchronized with the Rust exports. Breaking
+  an exported signature is acceptable when all in-repository
   consumers are updated together; never allow a stale binding to call a changed
   layout or signature.
-- Keep Julia and Python wrappers idiomatic but thin. Translate Rust statuses and
-  optionals into native language exceptions/results and `nothing`/`None`
-  consistently; never duplicate graph algorithms in bindings.
+- Keep Julia wrappers idiomatic but thin. Translate Rust statuses and optionals
+  into Julia exceptions/results and `nothing` consistently; never duplicate
+  graph algorithms in bindings.
 - Minimize boundary crossings with bulk APIs, but do not expose raw internal
   storage in a way that permits invariant violations or dangling views.
 
@@ -168,6 +185,9 @@ lockstep with the bindings.
 
 For each change, add tests at the lowest appropriate layer.
 
+- Test functions and reusable conformance suites should return `Result` when
+  setup or the operation under test is fallible. Use `?` for those anticipated
+  failures and standard assertions for test expectations.
 - Exercise the library's generic design in its tests. Define reusable
   conformance suites that are generic over the relevant graph traits instead of
   copying the same behavioral tests for every storage type.
@@ -187,7 +207,7 @@ For each change, add tests at the lowest appropriate layer.
 - Keep capability suites focused: a storage type should only be required to
   pass suites for traits and guarantees it actually advertises.
 - Test success, empty graphs, boundary identifiers, invalid identifiers,
-  overflow, allocation/capacity errors where injectable, and state after failure.
+  allocation/capacity errors where injectable, and state after failure.
 - Use model-based or property tests for nontrivial graph mutations and
   algorithms when practical. Important invariants include symmetric incidence,
   valid indices, accurate counts, and atomic mutation on error.

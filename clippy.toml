@@ -1,0 +1,4 @@
+disallowed-methods = [
+    { path = "std::panic::panic_any", reason = "safe public library paths must report errors instead of panicking" },
+    { path = "std::panic::resume_unwind", reason = "library code must not initiate or resume unwinding" },
+]

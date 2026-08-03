@@ -1,7 +1,7 @@
 use crate::{
-    AllocatableHyperGraph, Capacity, HyperEdgeCountable, ExtendableHyperGraph, HyperEdgeIndex,
-    HyperGraph, IncidenceHyperGraph, MutableIncidenceHyperGraph, NodeCountable, NodeIndex,
-    Undirected,
+    AllocatableHyperGraph, Capacity, ExtendableHyperGraph, HyperEdgeCountable, HyperEdgeIncidence,
+    HyperEdgeIndex, HyperGraph, MutableIncidenceHyperGraph, NodeCountable, NodeIncidence,
+    NodeIndex, Undirected,
 };
 
 use std::collections::{HashSet, TryReserveError};
@@ -66,30 +66,33 @@ impl HyperEdgeCountable for IncidenceMatrix {
     }
 }
 
-impl IncidenceHyperGraph for IncidenceMatrix {
-    fn incident_nodes<'a>(
-        &'a self,
+impl NodeIncidence for IncidenceMatrix {
+    fn incident_nodes(
+        &self,
         edge: HyperEdgeIndex<Self::RawEdgeId>,
-    ) -> Option<impl Iterator<Item = NodeIndex<Self::RawNodeId>> + 'a> {
+    ) -> Option<impl Iterator<Item = NodeIndex<Self::RawNodeId>>> {
         Some(self.hyperedge2vertex.get(edge.0)?.iter().copied())
     }
 
-    unsafe fn incident_nodes_unchecked<'a>(
-        &'a self,
+    unsafe fn incident_nodes_unchecked(
+        &self,
         edge: HyperEdgeIndex<Self::RawEdgeId>,
-    ) -> impl Iterator<Item = NodeIndex<Self::RawNodeId>> + 'a {
+    ) -> impl Iterator<Item = NodeIndex<Self::RawNodeId>> {
         unsafe { self.hyperedge2vertex.get_unchecked(edge.0).iter().copied() }
     }
-    fn incident_edges<'a>(
-        &'a self,
+}
+
+impl HyperEdgeIncidence for IncidenceMatrix {
+    fn incident_edges(
+        &self,
         node: NodeIndex<Self::RawNodeId>,
-    ) -> Option<impl Iterator<Item = HyperEdgeIndex<Self::RawEdgeId>> + 'a> {
+    ) -> Option<impl Iterator<Item = HyperEdgeIndex<Self::RawEdgeId>>> {
         Some(self.vertex2hyperedge.get(node.0)?.iter().copied())
     }
-    unsafe fn incident_edges_unchecked<'a>(
-        &'a self,
+    unsafe fn incident_edges_unchecked(
+        &self,
         node: NodeIndex<Self::RawNodeId>,
-    ) -> impl Iterator<Item = HyperEdgeIndex<Self::RawEdgeId>> + 'a {
+    ) -> impl Iterator<Item = HyperEdgeIndex<Self::RawEdgeId>> {
         unsafe { self.vertex2hyperedge.get_unchecked(node.0).iter().copied() }
     }
 }

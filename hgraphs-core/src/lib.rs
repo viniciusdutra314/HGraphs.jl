@@ -1,4 +1,9 @@
-use std::{collections::TryReserveError, hash::Hash};
+#![no_std]
+
+extern crate alloc;
+
+use alloc::collections::TryReserveError;
+use core::hash::Hash;
 
 pub trait NodeCountable {
     fn num_nodes(&self) -> usize;

@@ -1,9 +1,4 @@
-use crate::{
-    AllocatableHyperGraph, Capacity, ExtendableHyperGraph, HyperEdgeCountable, HyperEdgeIncidence,
-    HyperEdgeIndex, HyperEdgeList, HyperGraph, MutableIncidenceHyperGraph, NodeCountable,
-    NodeIncidence, NodeIndex, Undirected,
-};
-
+use hgraphs_core::*;
 use std::collections::{HashSet, TryReserveError};
 
 // Inspired by SimpleHypergraphs.jl

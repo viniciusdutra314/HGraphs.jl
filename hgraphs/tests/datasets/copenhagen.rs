@@ -1,7 +1,6 @@
-use hgraphs::{
-    AllocatableHyperGraph, ExtendableHyperGraph, HyperEdgeCountable, MutableIncidenceHyperGraph,
-    NodeCountable, projections::cliques::hypergraph_from_cliques, storage::IncidenceMatrix,
-};
+use hgraphs_core::*;
+
+use hgraphs::{data_structures::IncidenceMatrix, projections::cliques::hypergraph_from_cliques};
 use petgraph::{Undirected, graphmap::GraphMap};
 use polars::prelude::*;
 use std::{

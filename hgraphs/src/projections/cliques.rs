@@ -81,10 +81,8 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        HyperEdgeCountable, HyperEdgeList, HyperGraph, NodeCountable, NodeIncidence,
-        storage::IncidenceMatrix,
-    };
+    use crate::data_structures::IncidenceMatrix;
+    use hgraphs_core::*;
     use petgraph::graph::UnGraph;
     use std::collections::HashSet;
     use std::error::Error;

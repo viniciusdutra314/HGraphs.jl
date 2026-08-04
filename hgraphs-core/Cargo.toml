@@ -6,9 +6,13 @@ license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 version.workspace = true
-description = "Core traits for hypergraph data structures"
+description = "Core traits for hypergraph data structures and algorithms"
 keywords = ["hypergraphs", "data-structures"]
 readme = false
+
+[features]
+default = ["alloc"]
+alloc = []
 
 [lints]
 workspace = true

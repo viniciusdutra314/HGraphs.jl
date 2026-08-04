@@ -19,3 +19,4 @@ petgraph.workspace = true
 
 [dev-dependencies]
 rustworkx-core.workspace = true
+polars.workspace = true

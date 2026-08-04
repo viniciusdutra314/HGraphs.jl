@@ -14,7 +14,7 @@ version = "0.1.0-alpha.1"
 hgraphs-core = { path = "hgraphs-core", version = "0.1.0-alpha.1" }
 petgraph = { version = "0.8.3", default-features = false }
 rustworkx-core = "0.18.0"
-
+polars = { version = "0.54.4", default-features = false, features = ["csv"] }
 [workspace.lints.rust]
 unconditional_panic = "deny"
 

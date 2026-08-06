@@ -51,19 +51,17 @@ where
     let node_count = g.node_count();
     // TODO: Implement maximal-clique enumeration lazily to avoid collecting every clique.
     let cliques = petgraph::algo::maximal_cliques(&g);
-    let mut hypergraph = H::try_with_capacity(Capacity {
+    let mut hypergraph = H::with_capacity(Capacity {
         num_nodes: Some(node_count),
         num_hyperedges: Some(cliques.len()),
     })?;
 
     let mut graph_to_hypergraph_node_ids = HashMap::new();
     graph_to_hypergraph_node_ids.try_reserve(node_count)?;
-    graph_to_hypergraph_node_ids.extend(
-        g.node_identifiers()
-            .zip(hypergraph.try_add_nodes(node_count)?),
-    );
+    graph_to_hypergraph_node_ids
+        .extend(g.node_identifiers().zip(hypergraph.add_nodes(node_count)?));
 
-    let hyperedge_iter = hypergraph.try_add_hyperedges(cliques.len())?;
+    let hyperedge_iter = hypergraph.add_hyperedges(cliques.len())?;
     for (hyperedge, clique) in hyperedge_iter.zip(cliques.iter()) {
         for graph_node_id in clique {
             let hypergraph_node_id = graph_to_hypergraph_node_ids

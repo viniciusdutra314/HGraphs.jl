@@ -48,6 +48,17 @@ container, runtime, serialization format, or language binding.
 Follow the spirit of the Boost Graph Library: model small capabilities and
 write algorithms against the weakest sufficient set of capabilities.
 
+Choose public API names to maximize discoverability. Related checked and
+unchecked operations must share the same leading name and place qualifiers in
+suffix position, for example `add_nodes` and `add_nodes_unchecked`, so that
+documentation searches and editor completion group them together. Use the
+conventional `_unchecked` suffix for an operation that skips validation; do not
+use an `unchecked_` prefix or an `_unsafe` suffix. Do not add `try_` merely to
+signal a `Result` return type, because the signature already expresses ordinary
+fallibility. Retain `try_` when it distinguishes a meaningfully paired operation
+or follows an established Rust API or trait convention, such as `try_reserve`
+and `TryFrom`.
+
 - Prefer focused traits such as node iteration, hyperedge incidence, mutability,
   directedness, and property-map access over one monolithic hypergraph trait.
 - Keep node and hyperedge identifiers as distinct strong types. Do not assume

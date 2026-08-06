@@ -288,7 +288,7 @@ pub trait AllocatableHyperGraph: HyperGraph {
     /// TODO!
     fn try_reserve_exact(&mut self, additional: Capacity) -> Result<(), TryReserveError>;
 
-    fn try_with_capacity(capacity: Capacity) -> Result<Self, TryReserveError>
+    fn with_capacity(capacity: Capacity) -> Result<Self, TryReserveError>
     where
         Self: Default,
     {
@@ -303,7 +303,7 @@ pub trait AllocatableHyperGraph: HyperGraph {
 /// Successful insertion returns the identifiers created by that operation.
 #[cfg(feature = "alloc")]
 pub trait ExtendableHyperGraph: HyperGraph {
-    /// Tries to add `num_nodes` isolated nodes.
+    /// Adds `num_nodes` isolated nodes.
     ///
     /// On success, the iterator yields every newly created node identifier
     /// exactly once.
@@ -312,12 +312,12 @@ pub trait ExtendableHyperGraph: HyperGraph {
     ///
     /// `O(num_nodes)` total time and `O(num_nodes)` retained space.
     /// Auxiliary space is `O(1)` beyond implementation-defined iterator state.
-    fn try_add_nodes<'a>(
+    fn add_nodes<'a>(
         &mut self,
         num_nodes: usize,
     ) -> Result<impl Iterator<Item = NodeIndex<Self::RawNodeId>> + 'a, TryReserveError>;
 
-    /// Tries to add `num_hyperedges` empty hyperedges.
+    /// Adds `num_hyperedges` empty hyperedges.
     ///
     /// On success, the iterator yields every newly created hyperedge identifier
     /// exactly once.
@@ -327,7 +327,7 @@ pub trait ExtendableHyperGraph: HyperGraph {
     /// `O(num_hyperedges)` total time and `O(num_hyperedges)` retained
     /// space. Auxiliary space is `O(1)` beyond implementation-defined iterator
     /// state.
-    fn try_add_hyperedges<'a>(
+    fn add_hyperedges<'a>(
         &mut self,
         num_hyperedges: usize,
     ) -> Result<impl Iterator<Item = HyperEdgeIndex<Self::RawEdgeId>> + 'a, TryReserveError>;
@@ -397,7 +397,7 @@ pub trait PropertyMapReadable: PropertyMapBase {
     /// # Safety
     ///
     /// [`Self::get`] must return `Some` for `key` at the time of this call.
-    unsafe fn get_unsafe(&self, key: Self::Key) -> &Self::Value {
+    unsafe fn get_unchecked(&self, key: Self::Key) -> &Self::Value {
         unsafe { self.get(key).unwrap_unchecked() }
     }
 }
@@ -447,7 +447,7 @@ pub trait PropertyMapWritable: PropertyMapBase {
     ///
     /// `key` must belong to the property map's supported key domain, so that
     /// [`Self::set`] would return `Ok`.
-    unsafe fn set_unsafe(&mut self, key: Self::Key, value: Self::Value) -> Option<Self::Value> {
+    unsafe fn set_unchecked(&mut self, key: Self::Key, value: Self::Value) -> Option<Self::Value> {
         unsafe { self.set(key, value).unwrap_unchecked() }
     }
 
@@ -461,7 +461,7 @@ pub trait PropertyMapWritable: PropertyMapBase {
     ///
     /// `key` must belong to the property map's supported key domain, so that
     /// [`Self::remove`] would return `Ok`.
-    unsafe fn remove_unsafe(&mut self, key: Self::Key) -> Option<Self::Value> {
+    unsafe fn remove_unchecked(&mut self, key: Self::Key) -> Option<Self::Value> {
         unsafe { self.remove(key).unwrap_unchecked() }
     }
 }

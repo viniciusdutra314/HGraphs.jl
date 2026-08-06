@@ -2,7 +2,7 @@ use std::collections::TryReserveError;
 use std::error::Error;
 use std::fmt;
 
-/// An error encountered while constructing a hypergraph with [`crate::try_create_hypergraph!`].
+/// An error encountered while constructing a hypergraph with [`crate::create_hypergraph!`].
 #[derive(Debug)]
 pub enum HypergraphBuildError {
     Allocation(TryReserveError),
@@ -69,7 +69,9 @@ impl From<TryReserveError> for HypergraphBuildError {
 /// # Examples
 ///
 /// ```
-/// let (hypergraph, nodes_map, hyperedges_map) = try_create_hypergraph!(
+/// use hgraphs::{create_hypergraph, data_structures::IncidenceMatrix};
+///
+/// let (hypergraph, nodes_map, hyperedges_map) = create_hypergraph!(
 ///     IncidenceMatrix {
 ///         V = { alice, bob, carol, diana, eric },
 ///         HE = {
@@ -89,7 +91,7 @@ impl From<TryReserveError> for HypergraphBuildError {
 /// The hash maps are from `'static str` to `NodeIndex`/`HyperEdgeIndex`, and the error type is [`HypergraphBuildError`].
 ///
 #[macro_export]
-macro_rules! try_create_hypergraph {
+macro_rules! create_hypergraph {
     // part of the recursive counting trick
     (@unit $_name:ident) => {
         ()
@@ -97,7 +99,7 @@ macro_rules! try_create_hypergraph {
     // trick to recursively count the number of nodes/hyperedges,
     // hopefully the rust team will make this simpler in a new version
     (@count $($name:ident),* $(,)?) => {
-        <[()]>::len(&[$($crate::try_create_hypergraph!(@unit $name)),*])
+        <[()]>::len(&[$($crate::create_hypergraph!(@unit $name)),*])
     };
 
     (
@@ -112,8 +114,8 @@ macro_rules! try_create_hypergraph {
         // A immeditly invoked closure is used so `?` can be used to propagate errors.
         (|| -> ::core::result::Result<_, $crate::HypergraphBuildError> {
             // Count the number of nodes and hyperedges.
-            let node_count = $crate::try_create_hypergraph!(@count $($node),*);
-            let hyperedge_count = $crate::try_create_hypergraph!(@count $($hyperedge),*);
+            let node_count = $crate::create_hypergraph!(@count $($node),*);
+            let hyperedge_count = $crate::create_hypergraph!(@count $($hyperedge),*);
             let mut hypergraph = <$storage as ::core::default::Default>::default();
 
             // Reserve space for the maps variables names to nodes and hyperedges.
@@ -135,7 +137,7 @@ macro_rules! try_create_hypergraph {
             // populate the nodes map and hyperedges map with the node and hyperedge identifiers.
             // maybe unused for an empty hypergraph
             let mut _node_identifiers =
-                $crate::core::ExtendableHyperGraph::try_add_nodes(
+                $crate::core::ExtendableHyperGraph::add_nodes(
                     &mut hypergraph,
                     node_count,
                 )?;
@@ -151,7 +153,7 @@ macro_rules! try_create_hypergraph {
             )*
             //maybe unused for an empty hypergraph
             let mut _hyperedge_identifiers =
-                $crate::core::ExtendableHyperGraph::try_add_hyperedges(
+                $crate::core::ExtendableHyperGraph::add_hyperedges(
                     &mut hypergraph,
                     hyperedge_count,
                 )?;
@@ -195,7 +197,7 @@ mod tests {
 
     #[test]
     fn constructs_named_identifiers_and_incidences() -> TestResult {
-        let (hypergraph, nodes, hyperedges) = try_create_hypergraph!(
+        let (hypergraph, nodes, hyperedges) = create_hypergraph!(
             IncidenceMatrix {
                 V = { alice, bob, carol, diana, eric },
                 HE = {
@@ -245,7 +247,7 @@ mod tests {
     #[test]
     fn supports_empty_sets() -> TestResult {
         let (hypergraph, nodes, hyperedges) =
-            try_create_hypergraph!(IncidenceMatrix { V = {}, HE = {} })?;
+            create_hypergraph!(IncidenceMatrix { V = {}, HE = {} })?;
 
         assert_eq!(hypergraph.num_nodes(), 0);
         assert_eq!(hypergraph.num_hyperedges(), 0);
@@ -256,7 +258,7 @@ mod tests {
 
     #[test]
     fn supports_qualified_storage_types() -> TestResult {
-        let (hypergraph, nodes, hyperedges) = try_create_hypergraph!(
+        let (hypergraph, nodes, hyperedges) = create_hypergraph!(
             crate::data_structures::IncidenceMatrix {
                 V = { a, b, c },
                 HE = { e = { a, b, c } },
@@ -272,7 +274,7 @@ mod tests {
 
     #[test]
     fn rejects_duplicate_node_names() {
-        let result = try_create_hypergraph!(IncidenceMatrix {
+        let result = create_hypergraph!(IncidenceMatrix {
             V = { a, a },
             HE = {},
         });
@@ -285,7 +287,7 @@ mod tests {
 
     #[test]
     fn rejects_duplicate_hyperedge_names() {
-        let result = try_create_hypergraph!(
+        let result = create_hypergraph!(
             IncidenceMatrix {
                 V = { a, b, c },
                 HE = {

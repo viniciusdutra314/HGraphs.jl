@@ -99,7 +99,7 @@ impl HyperEdgeIncidence for IncidenceMatrix {
 }
 
 impl ExtendableHyperGraph for IncidenceMatrix {
-    fn try_add_nodes<'a>(
+    fn add_nodes<'a>(
         &mut self,
         num_nodes: usize,
     ) -> Result<impl Iterator<Item = NodeIndex<Self::RawNodeId>> + 'a, TryReserveError> {
@@ -111,7 +111,7 @@ impl ExtendableHyperGraph for IncidenceMatrix {
         Ok((current_len..end).map(NodeIndex))
     }
 
-    fn try_add_hyperedges<'a>(
+    fn add_hyperedges<'a>(
         &mut self,
         num_hyperedges: usize,
     ) -> Result<impl Iterator<Item = HyperEdgeIndex<Self::RawEdgeId>> + 'a, TryReserveError> {
@@ -130,13 +130,13 @@ mod tests {
     type TestResult = Result<(), Box<dyn std::error::Error>>;
     #[test]
     fn test_allocation_and_initialization() -> TestResult {
-        let mut graph = IncidenceMatrix::try_with_capacity(Capacity {
+        let mut graph = IncidenceMatrix::with_capacity(Capacity {
             num_nodes: Some(5),
             num_hyperedges: Some(10),
         })?;
         assert_eq!(graph.num_nodes(), 0);
         assert_eq!(graph.num_hyperedges(), 0);
-        for node_id in graph.try_add_nodes(5).map_err(|_| "failed to add nodes")? {
+        for node_id in graph.add_nodes(5).map_err(|_| "failed to add nodes")? {
             let incident_edges = graph
                 .incident_edges(node_id)
                 .ok_or("new node identifier is invalid")?;
@@ -145,7 +145,7 @@ mod tests {
         assert_eq!(graph.num_nodes(), 5);
         assert_eq!(graph.num_hyperedges(), 0);
         for hyperedge_id in graph
-            .try_add_hyperedges(10)
+            .add_hyperedges(10)
             .map_err(|_| "failed to add edges")?
         {
             let incident_nodes = graph

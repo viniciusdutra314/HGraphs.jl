@@ -203,6 +203,11 @@ For each change, add tests at the lowest appropriate layer.
 - Test functions and reusable conformance suites should return `Result` when
   setup or the operation under test is fallible. Use `?` for those anticipated
   failures and standard assertions for test expectations.
+- Keep error context concise when a test propagates an unexpected setup or
+  lookup failure that should be impossible after successful construction. A
+  short identifier is sufficient; do not add a verbose message that merely
+  restates the failing expression. Retain detailed context for anticipated
+  error paths or failures whose source would otherwise be ambiguous.
 - Exercise the library's generic design in its tests. Define reusable
   conformance suites that are generic over the relevant hypergraph traits
   instead of copying the same behavioral tests for every storage type.
